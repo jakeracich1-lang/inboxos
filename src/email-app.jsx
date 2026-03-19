@@ -1034,6 +1034,7 @@ export default function App() {
   };
 
 
+  const generateDraft = async () => {
     if (!selected) return;
     setDraftLoading(true);
     setShowDraft(true);
@@ -1327,7 +1328,7 @@ export default function App() {
                     </div>
                   )}
                 </div>
-              </>
+     /
             ) : null}
 
             {/* Outlook notice when outlook is active */}

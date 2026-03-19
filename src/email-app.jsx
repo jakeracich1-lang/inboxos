@@ -198,10 +198,19 @@ Tone: ${tone}
 Be concise and natural.`;
 
 export default function App() {
-  const [accounts, setAccounts] = useState({
-    gmail1: { on: false, token: null, email: null, label: "Gmail (Personal)" },
-    gmail2: { on: false, token: null, email: null, label: "Gmail (Work)" },
-    outlook: { on: false, token: null, email: null, label: "Outlook" },
+  const [accounts, setAccounts] = useState(() => {
+    const d = {
+      gmail1: { on: false, token: null, email: null, label: "Gmail (Personal)" },
+      gmail2: { on: false, token: null, email: null, label: "Gmail (Work)" },
+      outlook: { on: false, token: null, email: null, label: "Outlook" },
+    };
+    try {
+      ["gmail1","gmail2","outlook"].forEach(k => {
+        const s = sessionStorage.getItem("inboxos_" + k);
+        if (s) { const p = JSON.parse(s); if (p.token) d[k] = p; }
+      });
+    } catch(e) {}
+    return d;
   });
   const [activeAcc, setActiveAcc] = useState(null);
   const [emails, setEmails] = useState([]);
@@ -249,10 +258,9 @@ export default function App() {
           })
             .then(r => r.json())
             .then(info => {
-              setAccounts(prev => ({
-                ...prev,
-                [key]: { ...prev[key], on: true, token, email: info.email },
-              }));
+              const updated = { on: true, token, email: info.email, label: ["gmail1","gmail2","outlook"].indexOf(key) === 2 ? "Outlook" : key === "gmail1" ? "Gmail (Personal)" : "Gmail (Work)" };
+              try { sessionStorage.setItem("inboxos_" + key, JSON.stringify(updated)); } catch(e) {}
+              setAccounts(prev => ({ ...prev, [key]: updated }));
               showToast("✓ Connected " + info.email);
             });
         }

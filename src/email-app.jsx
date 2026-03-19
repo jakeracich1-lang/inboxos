@@ -197,6 +197,10 @@ async function gmailGet(token, path) {
   const r = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/" + path, {
     headers: { Authorization: "Bearer " + token },
   });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.error?.message || "Gmail API error " + r.status);
+  }
   return r.json();
 }
 async function gmailPost(token, path, body) {
@@ -205,6 +209,10 @@ async function gmailPost(token, path, body) {
     headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.error?.message || "Gmail API error " + r.status);
+  }
   return r.json();
 }
 
@@ -426,7 +434,8 @@ export default function App() {
       };
       const results = {};
       for (const [tab, query] of Object.entries(tabs)) {
-        const data = await gmailGet(token, `messages?maxResults=40&q=in:inbox ${query}`);
+        const q = encodeURIComponent("in:inbox " + query);
+        const data = await gmailGet(token, `messages?maxResults=40&q=${q}`);
         const msgs = data.messages || [];
         if (msgs.length === 0) { results[tab] = []; continue; }
         const details = await Promise.all(
@@ -512,7 +521,7 @@ Emails: ${JSON.stringify(allForAI)}`,
 
     try {
       const lblMap = await loadLabels(token);
-      const data = await gmailGet(token, "messages?maxResults=50&q=in:inbox category:primary");
+      const data = await gmailGet(token, "messages?maxResults=50&q=" + encodeURIComponent("in:inbox category:primary"));
       const msgs = data.messages || [];
       if (msgs.length === 0) { setPrimaryEmails([]); setPrimaryLoading(false); setPrimaryAnalyzed(true); return; }
 

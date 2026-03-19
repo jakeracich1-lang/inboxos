@@ -1328,7 +1328,7 @@ export default function App() {
                     </div>
                   )}
                 </div>
-     /
+
             ) : null}
 
             {/* Outlook notice when outlook is active */}
